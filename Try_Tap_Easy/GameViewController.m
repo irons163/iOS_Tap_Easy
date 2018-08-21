@@ -8,6 +8,7 @@
 
 #import "GameViewController.h"
 #import "GameScene.h"
+#import "GameCenterUtil.h"
 
 @implementation SKScene (Unarchive)
 
@@ -28,7 +29,9 @@
 
 @end
 
-@implementation GameViewController
+@implementation GameViewController{
+    ADBannerView * adBannerView;
+}
 
 - (void)viewDidLoad
 {
@@ -43,10 +46,71 @@
     
     // Create and configure the scene.
     GameScene *scene = [GameScene unarchiveFromFile:@"GameScene"];
+    scene.size = skView.bounds.size;
     scene.scaleMode = SKSceneScaleModeAspectFill;
     
     // Present the scene.
     [skView presentScene:scene];
+    
+    adBannerView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, -50, 200, 30)];
+    adBannerView.delegate = self;
+    adBannerView.alpha = 1.0f;
+    [self.view addSubview:adBannerView];
+    
+    GameCenterUtil * gameCenterUtil = [GameCenterUtil sharedInstance];
+    gameCenterUtil.delegate = self;
+    [gameCenterUtil isGameCenterAvailable];
+    [gameCenterUtil authenticateLocalUser:self];
+    [gameCenterUtil submitAllSavedScores];
+}
+
+-(void) showRankView{
+    GameCenterUtil * gameCenterUtil = [GameCenterUtil sharedInstance];
+    gameCenterUtil.delegate = self;
+    [gameCenterUtil isGameCenterAvailable];
+    //    [gameCenterUtil authenticateLocalUser:self];
+    [gameCenterUtil showGameCenter:self];
+    [gameCenterUtil submitAllSavedScores];
+}
+
+-(void)bannerViewDidLoadAd:(ADBannerView *)banner{
+    [self layoutAnimated:true];
+}
+
+-(void)bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError *)error{
+    //    [adBannerView removeFromSuperview];
+    //    adBannerView.delegate = nil;
+    //    adBannerView = nil;
+    [self layoutAnimated:true];
+}
+
+-(BOOL)bannerViewActionShouldBegin:(ADBannerView *)banner willLeaveApplication:(BOOL)willLeave{
+    //    [MyScene setAllGameRun:NO];
+    return true;
+}
+
+- (void)layoutAnimated:(BOOL)animated
+{
+    //    CGRect contentFrame = self.view.bounds;
+    
+    CGRect contentFrame = self.view.bounds;
+    //    contentFrame.origin.y = -50;
+    CGRect bannerFrame = adBannerView.frame;
+    if (adBannerView.bannerLoaded)
+    {
+        //        contentFrame.size.height -= adBannerView.frame.size.height;
+        contentFrame.size.height = 0;
+        bannerFrame.origin.y = contentFrame.size.height;
+    } else {
+        //        bannerFrame.origin.y = contentFrame.size.height;
+        bannerFrame.origin.y = -50;
+    }
+    
+    [UIView animateWithDuration:animated ? 0.25 : 0.0 animations:^{
+        adBannerView.frame = contentFrame;
+        [adBannerView layoutIfNeeded];
+        adBannerView.frame = bannerFrame;
+    }];
 }
 
 - (BOOL)shouldAutorotate

@@ -8,6 +8,12 @@
 
 #import <SpriteKit/SpriteKit.h>
 
-@interface GameScene : SKScene
+@interface GameScene : SKScene<UITableViewDelegate, UITableViewDataSource>
+
+@property (nonatomic) NSTimeInterval lastSpawnTimeInterval;
+@property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
+
+@property UITableView* tableView;
+@property (nonatomic) SKSpriteNode * hpBar;
 
 @end

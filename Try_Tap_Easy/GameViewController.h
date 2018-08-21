@@ -9,6 +9,14 @@
 #import <UIKit/UIKit.h>
 #import <SpriteKit/SpriteKit.h>
 
-@interface GameViewController : UIViewController
+
+@import iAd;
+
+@protocol pauseGameDelegate <NSObject>
+- (void)pauseGame;
+@end
+
+@interface GameViewController : UIViewController<pauseGameDelegate, ADBannerViewDelegate>
+
 
 @end
